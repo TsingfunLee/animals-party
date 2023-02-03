@@ -1,0 +1,21 @@
+<template>
+  <div class="flex"> 我是頁面 </div>
+</template>
+
+<script setup lang="ts">
+import { ref } from 'vue';
+
+interface Props {
+  label?: string;
+}
+const props = withDefaults(defineProps<Props>(), {
+  label: '',
+});
+
+const emit = defineEmits<{
+  (e: 'update:modelValue', value: string): void;
+}>();
+</script>
+
+<style scoped lang="sass">
+</style>
