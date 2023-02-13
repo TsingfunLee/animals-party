@@ -20,23 +20,72 @@
       color="#f0a53c"
     />
   </background-polygons-floating>
+
+  <div class="absolute inset-0 flex flex-col flex-center gap-20">
+    <btn-base
+      label="建立派对"
+      label-hover-color="#ff9a1f"
+      stroke-color="#856639"
+      stroke-hover-color="white"
+      class="menu-btn"
+    >
+      <template #default="{ state }">
+        <div
+          class="btn-content absolute inset-0"
+          :class="{ 'hover': state.hover }"
+        >
+          <polygon-base
+            class="absolute btn-polygon-lt"
+            size="14rem"
+            shape="round"
+            fill="spot"
+          />
+
+          <q-icon
+            name="sports_esports"
+            color="white"
+            size="8rem"
+            class="absolute game-icon"
+          />
+        </div>
+      </template>
+    </btn-base>
+
+    <btn-base
+      class="menu-btn"
+      label="加入游戏"
+      label-hover-color="#ff9a1f"
+      stroke-color="#856639"
+      stroke-hover-color="white"
+    >
+      <template #default="{ state }">
+        <div
+          class="btn-content absolute inset-0"
+          :class="{ 'hover': state.hover }"
+        >
+          <polygon-base
+            class="absolute btn-polygon-lt"
+            size="14rem"
+            rotate="144deg"
+            shape="pentagon"
+          />
+          <q-icon
+            name="person_add"
+            color="white"
+            size="7.8rem"
+            class="absolute join-icon"
+          />
+        </div>
+      </template>
+    </btn-base>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
 import backgroundPolygonsFloating from '_c/background-polygons-floating.vue';
 import polygonBase from '_c/polygon-base.vue';
+import BtnBase from '_c/btn-base.vue';
 
-interface Props {
-  label?: string;
-}
-const props = withDefaults(defineProps<Props>(), {
-  label: '',
-});
-
-const emit = defineEmits<{
-  (e: 'update:modelValue', value: string): void;
-}>();
 </script>
 
 <style scoped lang="sass">
@@ -57,4 +106,26 @@ const emit = defineEmits<{
     transform: rotate(0deg)
   50%
     transform: rotate(20deg)
+
+.menu-btn
+  width: 30rem
+
+.btn-polygon-lt
+  left: 0
+  top: 0
+  transform: translate(-50%, -60%)
+
+.game-icon
+  right: 0
+  bottom: 0
+  transform: translate(12%, 24%) rotate(-10deg)
+  opacity: 0.6
+
+.btn-content
+  transform: scale(1)
+  transition-duration: 0.4s
+  transition-timing-function: cubic-bezier(0.545, 1.650, 0.520, 1.305)
+  &.hover
+    transform: scale(0.96) rotate(-2deg)
+    transition-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1)
 </style>
