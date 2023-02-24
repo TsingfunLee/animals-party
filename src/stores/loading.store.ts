@@ -13,7 +13,6 @@ export const useLoadingStore = defineStore('loading', {
     isLoading: false,
     isEntering: false,
     isLeaving: false,
-
     type: ''
   }),
 })

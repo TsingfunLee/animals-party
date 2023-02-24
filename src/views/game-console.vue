@@ -5,7 +5,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { useLoading } from '../composables/use-loading';
+
+const loading = useLoading();
+loading.hide();
 </script>
 
 <style scoped lang="sass">

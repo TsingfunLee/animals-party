@@ -28,6 +28,7 @@
       stroke-color="#856639"
       stroke-hover-color="white"
       class="menu-btn"
+      @click="startParty"
     >
       <template #default="{ state }">
         <div
@@ -85,6 +86,19 @@
 import backgroundPolygonsFloating from '_c/background-polygons-floating.vue';
 import polygonBase from '_c/polygon-base.vue';
 import BtnBase from '_c/btn-base.vue';
+import { RouteName } from '../router/router';
+import { useLoading } from '../composables/use-loading';
+import { useRouter } from 'vue-router';
+
+const loading = useLoading();
+const router = useRouter();
+
+async function startParty() {
+  await loading.show();
+  router.push({
+    name: RouteName.GAME_CONSOLE
+  });
+}
 
 </script>
 

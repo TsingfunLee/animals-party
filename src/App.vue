@@ -1,22 +1,15 @@
 <template>
-  <div class="flex">
-    <q-btn
-      icon="home"
-      class="w-40"
-    >
-      安安 {{ store.data }}
-    </q-btn>
-  </div>
   <router-view />
+  <loading-overlay />
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { useMainStore } from './stores/main.store';
 
-const store = useMainStore();
+import LoadingOverlay from './components/loading-overlay.vue';
 
-document.title += ` v${import.meta.env.PACKAGE_VERSION}`
+
+document.title += ` v${import.meta.env.PACKAGE_VERSION}`;
 </script>
 
 <style lang="sass">
