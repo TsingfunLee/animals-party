@@ -23,5 +23,13 @@ export default defineConfig({
     }),
 
     loadVersion(),
-  ]
+  ],
+  server: {
+    proxy: {
+      '/socket.io': {
+        target: 'ws://localhost/socket.io',
+        ws: true
+      }
+    }
+  }
 })

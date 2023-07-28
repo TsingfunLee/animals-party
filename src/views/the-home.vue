@@ -89,12 +89,34 @@ import BtnBase from '_c/btn-base.vue';
 import { RouteName } from '../router/router';
 import { useLoading } from '../composables/use-loading';
 import { useRouter } from 'vue-router';
+import { useClientGameConsole } from '../composables/use-client-game-console';
+import { useQuasar } from 'quasar';
+import to from 'await-to-js';
+import {useGameConsoleStore} from '../stores/game-console.store';
 
 const loading = useLoading();
 const router = useRouter();
+const gameConsole = useClientGameConsole();
+const $q = useQuasar();
+const gameConsoleStore = useGameConsoleStore();
 
 async function startParty() {
   await loading.show();
+
+  const [err, roomId] = await to(gameConsole.startParty());
+
+  if (err) {
+    console.error(`[ startParty ] err : `, err);
+    $q.notify({
+      type: 'negative',
+      message: '建立派对失败，请换个姿势稍后尝试'
+    });
+    return;
+  }
+
+  console.log(`[ startParty ] roomId : `, roomId);
+  gameConsoleStore.setRoomId(roomId);
+
   router.push({
     name: RouteName.GAME_CONSOLE
   });

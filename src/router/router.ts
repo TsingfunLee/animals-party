@@ -8,6 +8,8 @@ export enum RouteName {
   HOME = 'home',
 
   GAME_CONSOLE = 'game-console',
+
+  GAME_CONSOLE_LOBBY = 'game-console-lobby',
 }
 
 const routes: Array<RouteRecordRaw> = [
@@ -28,6 +30,13 @@ const routes: Array<RouteRecordRaw> = [
     path: `/game-console`,
     name: RouteName.GAME_CONSOLE,
     component: () => import('../views/game-console.vue'),
+    children: [
+      {
+        path: `lobby`,
+        name: RouteName.GAME_CONSOLE_LOBBY,
+        component: () => import('../views/game-console-lobby.vue')
+      },
+    ]
   },
 
   {
