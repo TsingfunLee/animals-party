@@ -7,18 +7,73 @@
           <room-id-chip color="#67785d" />
 
           <btn-base
-            label="開始遊戲"
+            label="开始游戏"
             class="w-96"
             label-hover-color="#7b916e"
             stroke-hover-color="white"
-          />
+          >
+            <template #default="{ state }">
+              <transition name="opacity">
+                <div
+                  v-if="state.hover"
+                  class="btn-content absolute inset-0"
+                >
+                  <div class="polygon-lt">
+                    <polygon-base
+                      size="13rem"
+                      shape="round"
+                      fill="spot"
+                      class="polygon-beat"
+                    />
+                  </div>
+
+                  <div class="polygon-rb">
+                    <polygon-base
+                      size="13rem"
+                      shape="round"
+                      fill="fence"
+                      opacity="0.2"
+                      class="polygon-beat"
+                    />
+                  </div>
+                </div>
+              </transition>
+            </template>
+          </btn-base>
 
           <btn-base
-            label="結束派對"
+            label="结束派对"
             class="w-96"
             label-hover-color="#7b916e"
             stroke-hover-color="white"
-          />
+          >
+            <template #default="{ state }">
+              <transition name="opacity">
+                <div
+                  v-if="state.hover"
+                  class="btn-content absolute inset-0"
+                >
+                  <div class="polygon-lt">
+                    <polygon-base
+                      size="13.4rem"
+                      shape="square"
+                      fill="spot"
+                      class="polygon-swing"
+                    />
+                  </div>
+                  <div class="polygon-rb">
+                    <polygon-base
+                      size="13.3rem"
+                      shape="square"
+                      fill="fence"
+                      opacity="0.2"
+                      class="polygon-swing"
+                    />
+                  </div>
+                </div>
+              </transition>
+            </template>
+          </btn-base>
         </div>
 
         <!-- 玩家清單 -->
@@ -28,8 +83,16 @@
           class="flex justify-center items-center gap-4 h-32"
         >
           <player-avatar
-            player-id="id"
+            player-id="1P"
             code-name="1P"
+          />
+          <player-avatar
+            player-id="2P"
+            code-name="2P"
+          />
+          <player-avatar
+            player-id="3P"
+            code-name="3P"
           />
         </transition-group>
       </div>
@@ -54,11 +117,62 @@ import PlayerAvatar from '../components/player-avatar.vue';
 import RoomIdChip from '../components/room-id-chip.vue';
 import BtnBase from '../components/btn-base.vue';
 import { useLoading } from '../composables/use-loading';
-
+import { useClientGameConsole } from '../composables/use-client-game-console';
 
 const loading = useLoading();
-loading.hide();
+const gameConsole = useClientGameConsole();
+
+function init(){
+  gameConsole.setStatus('lobby')
+  loading.hide();
+}
+init()
 </script>
 
 <style scoped lang="sass">
+.btn-content
+  background: #62a88a
+
+.polygon-lt
+  position: absolute
+  left: -6rem
+  top: -6rem
+  animation: polygon-rotate 50s infinite linear
+.polygon-rb
+  position: absolute
+  right: -6rem
+  bottom: -6rem
+  animation: polygon-rotate 40s infinite linear
+
+@keyframes polygon-rotate
+  0%
+    transform: rotate(0deg)
+  100%
+    transform: rotate(360deg)
+
+.polygon-beat
+  animation: polygon-beat 1.4s infinite
+
+.polygon-swing
+  animation: polygon-swing 1.8s infinite
+
+@keyframes polygon-beat
+  0%
+    transform: scale(1)
+    animation-timing-function: cubic-bezier(0.000, 0.000, 1.000, 0.000)
+  50%
+    transform: scale(0.9)
+    animation-timing-function: cubic-bezier(0.000, 1.000, 1.000, 1.000)
+  100%
+    transform: scale(1)
+
+@keyframes polygon-swing
+  0%
+    transform: scale(1)
+    animation-timing-function: cubic-bezier(0.870, 0.000, 0.180, 0.995)
+  50%
+    transform: scale(0.9)
+    animation-timing-function: cubic-bezier(0.870, 0.000, 0.260, 1.375)
+  100%
+    transform: scale(1)
 </style>

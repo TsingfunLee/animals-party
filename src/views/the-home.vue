@@ -58,6 +58,7 @@
       label-hover-color="#ff9a1f"
       stroke-color="#856639"
       stroke-hover-color="white"
+      @click="joinParty"
     >
       <template #default="{ state }">
         <div
@@ -93,6 +94,7 @@ import { useClientGameConsole } from '../composables/use-client-game-console';
 import { useQuasar } from 'quasar';
 import to from 'await-to-js';
 import {useGameConsoleStore} from '../stores/game-console.store';
+import DialogJoinParty from '../components/dialog-join-party.vue';
 
 const loading = useLoading();
 const router = useRouter();
@@ -119,6 +121,23 @@ async function startParty() {
 
   router.push({
     name: RouteName.GAME_CONSOLE
+  });
+}
+
+async function joinParty() {
+  $q.dialog({
+    component: DialogJoinParty,
+  }).onOk(async () => {
+    $q.notify({
+      type: 'positive',
+      message: '加入房间成功'
+    });
+
+    await loading.show();
+
+    router.push({
+      name: RouteName.PLAYER_GAMEPAD
+    })
   });
 }
 

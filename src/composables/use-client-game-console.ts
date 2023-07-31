@@ -1,7 +1,10 @@
 import { useSocketClient } from "./use-socket-client";
+import { GameConsoleStatus, GameName, UpdateGameConsoleState, useGameConsoleStore } from '../stores/game-console.store';
+
+const gameConsoleStore = useGameConsoleStore()
 
 export function useClientGameConsole(){
-  const {connect, close} = useSocketClient();
+  const {connect, close, client} = useSocketClient();
 
   async function startParty(){
     close();
@@ -33,8 +36,40 @@ export function useClientGameConsole(){
     })
   }
 
+  function setStatus(status: `${GameConsoleStatus}`) {
+    gameConsoleStore.updateState({
+      status
+    });
+
+    if (!client?.value?.connected) {
+      return Promise.reject('client 尚未連線');
+    }
+
+    client.value.emit('game-console:state-update', {
+      status
+    });
+  }
+
+  function setGameName(gameName: `${GameName}`) {
+    gameConsoleStore.updateState({
+      gameName
+    });
+
+    if (!client?.value?.connected) {
+      return Promise.reject('client 尚未連線');
+    }
+
+    client.value.emit('game-console:state-update', {
+      gameName
+    });
+  }
+
   return {
     // 建立连接，并回传房间id
-    startParty
+    startParty,
+    // 设定游戏状态，自动同步至房间内所有玩家
+    setStatus,
+    // 设定游戏名称，自动同步至房间内所有玩家
+    setGameName
   }
 }

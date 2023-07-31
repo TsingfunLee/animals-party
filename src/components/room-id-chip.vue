@@ -28,4 +28,5 @@ const roomId = computed(() => gameConsoleStore.roomId);
   font-size: 2rem
   letter-spacing: 2px
   font-weight: 700
+  font-family: 'Chakra Petch', sans-serif
 </style>
