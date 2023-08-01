@@ -1,5 +1,5 @@
 <template>
-  <div class="absolute flex">
+  <div class="absolute flex w-full h-full">
     <div class="flex w-full h-full z-10">
       <!-- 選單 -->
       <div class="w-1/3 flex flex-col p-12">

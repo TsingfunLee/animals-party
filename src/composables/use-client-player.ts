@@ -3,10 +3,13 @@ import { computed, onBeforeUnmount } from 'vue';
 import { useSocketClient } from './use-socket-client';
 import { Room } from '../types/socket.type';
 import { createEventHook } from '@vueuse/core';
-import { UpdateGameConsoleState } from '../stores/game-console.store';
+import { UpdateGameConsoleState, useGameConsoleStore } from '../stores/game-console.store';
+import { useMainStore } from '../stores/main.store';
 
 export function useClientPlayer() {
   const { client, connect } = useSocketClient();
+  const gameConsoleStore = useGameConsoleStore();
+  const mainStore = useMainStore();
 
   function joinRoom(roomId: string): Promise<Room> {
     return new Promise((resolve, reject) => {
@@ -65,9 +68,17 @@ export function useClientPlayer() {
     client.value.emit('player:request-game-console-state');
   }
 
+  const codeName = computed(() => {
+    const index = gameConsoleStore.players.findIndex(player => player.clientId === mainStore.clientId);
+    if(index < 0) return 'unknown';
+
+    return `${index + 1}P`;
+  })
+
   return {
     joinRoom,
     onGameConsoleStateUpdate: stateUpdateHook.on,
     requestGameConsoleState,
+    codeName
   }
 }
