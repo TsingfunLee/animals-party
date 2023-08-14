@@ -5,6 +5,7 @@ import { Room } from '../types/socket.type';
 import { createEventHook } from '@vueuse/core';
 import { UpdateGameConsoleState, useGameConsoleStore } from '../stores/game-console.store';
 import { useMainStore } from '../stores/main.store';
+import { SingleData } from '../types/player.type';
 
 export function useClientPlayer() {
   const { client, connect } = useSocketClient();
@@ -75,10 +76,22 @@ export function useClientPlayer() {
     return `${index + 1}P`;
   })
 
+  async function emitGamepadData(data: SingleData[]) {
+    if (!client?.value?.connected) {
+      return Promise.reject('client 尚未連線');
+    }
+
+    client.value.emit('player:gamepad-data', {
+      playerId: mainStore.clientId,
+      keys: data,
+    })
+  }
+
   return {
     joinRoom,
     onGameConsoleStateUpdate: stateUpdateHook.on,
     requestGameConsoleState,
-    codeName
+    codeName,
+    emitGamepadData
   }
 }

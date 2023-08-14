@@ -1,5 +1,9 @@
 import { useSocketClient } from "./use-socket-client";
 import { GameConsoleStatus, GameName, UpdateGameConsoleState, useGameConsoleStore } from '../stores/game-console.store';
+import { GamepadData } from "../types/player.type";
+import { createEventHook } from "@vueuse/core";
+import { onBeforeUnmount } from "vue";
+import { Player } from './../stores/game-console.store';
 
 const gameConsoleStore = useGameConsoleStore()
 
@@ -64,12 +68,27 @@ export function useClientGameConsole(){
     });
   }
 
+  const gamepadDataHook = createEventHook<GamepadData>();
+  client?.value?.on('player:gamepad-data', gamepadDataHook.trigger);
+  onBeforeUnmount(() => {
+    client?.value?.removeListener('player:gamepad-data', gamepadDataHook.trigger);
+  });
+
+  const playerUpdateHook = createEventHook<Player[]>();
+  client?.value?.on('game-console:player-update', playerUpdateHook.trigger);
+  onBeforeUnmount(()=>{
+    client?.value?.removeListener('game-console:player-update', playerUpdateHook.trigger);
+  });
+
   return {
     // 建立连接，并回传房间id
     startParty,
     // 设定游戏状态，自动同步至房间内所有玩家
     setStatus,
     // 设定游戏名称，自动同步至房间内所有玩家
-    setGameName
+    setGameName,
+    // 摇杆控制信号事件
+    onGamepadData: gamepadDataHook.on,
+    onPlayerUpdate: playerUpdateHook.on
   }
 }

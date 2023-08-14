@@ -83,16 +83,10 @@
           class="flex justify-center items-center gap-4 h-32"
         >
           <player-avatar
-            player-id="1P"
-            code-name="1P"
-          />
-          <player-avatar
-            player-id="2P"
-            code-name="2P"
-          />
-          <player-avatar
-            player-id="3P"
-            code-name="3P"
+            v-for="player in playersInfo"
+            :key="player.id"
+            :player-id="player.id"
+            :code-name="player.codeName"
           />
         </transition-group>
       </div>
@@ -118,15 +112,31 @@ import RoomIdChip from '../components/room-id-chip.vue';
 import BtnBase from '../components/btn-base.vue';
 import { useLoading } from '../composables/use-loading';
 import { useClientGameConsole } from '../composables/use-client-game-console';
+import { useGameConsoleStore } from '../stores/game-console.store';
+import {computed} from 'vue'
 
 const loading = useLoading();
 const gameConsole = useClientGameConsole();
+const gameConsoleStore = useGameConsoleStore();
 
 function init(){
   gameConsole.setStatus('lobby')
   loading.hide();
+
+  gameConsole.onGamepadData(data => {
+    console.log(`[ onGamepadData ] data :`, data);
+  });
 }
 init()
+
+const playersInfo = computed(() => {
+  const result = gameConsoleStore.players.map((player, i) =>({
+    id: player.clientId,
+    codeName: `${i + 1}P`
+  }))
+
+  return result;
+})
 </script>
 
 <style scoped lang="sass">

@@ -3,11 +3,15 @@
     class="w-full h-full flex text-white select-none"
     @touchmove="(e)=>e.preventDefault()"
   >
-    <gamepad-d-pad class="absolute bottom-5 left-8" />
+    <gamepad-d-pad
+      class="absolute bottom-5 left-8"
+      @trigger="({ keyName, status }) => handleBtnTrigger(keyName, status)"
+    />
     <gamepad-btn
       class="absolute bottom-10 right-20"
       size="6rem"
       icon="done"
+      @trigger="(status) => handleBtnTrigger('confirm', status)"
     />
 
     <div
@@ -47,6 +51,7 @@ import { useScreenOrientation } from '@vueuse/core';
 import {computed} from 'vue'
 import { getPlayerColor } from '../common/utils';
 import { useClientPlayer } from '../composables/use-client-player';
+import { KeyName } from '../types/player.type';
 
 const loading = useLoading();
 const { orientation } = useScreenOrientation();
@@ -66,6 +71,15 @@ const playerColorName = computed(() => getPlayerColor({
   codeName: codeName.value
 }));
 const codeNameClass = computed(() => `bg-${playerColorName.value}`);
+
+function handleBtnTrigger(keyName: `${KeyName}`, status: boolean) {
+  console.log(`[ handleBtnTrigger ] : `, { keyName, status });
+
+  player.emitGamepadData([{
+    name: keyName,
+    value: status,
+  }]);
+}
 </script>
 
 <style scoped lang="sass">
