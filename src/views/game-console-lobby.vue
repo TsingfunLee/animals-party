@@ -85,6 +85,7 @@
           <player-avatar
             v-for="player in playersInfo"
             :key="player.id"
+            ref="players"
             :player-id="player.id"
             :code-name="player.codeName"
           />
@@ -113,7 +114,7 @@ import BtnBase from '../components/btn-base.vue';
 import { useLoading } from '../composables/use-loading';
 import { useClientGameConsole } from '../composables/use-client-game-console';
 import { useGameConsoleStore } from '../stores/game-console.store';
-import {computed} from 'vue'
+import {computed, ref} from 'vue'
 
 const loading = useLoading();
 const gameConsole = useClientGameConsole();
@@ -125,6 +126,8 @@ function init(){
 
   gameConsole.onGamepadData(data => {
     console.log(`[ onGamepadData ] data :`, data);
+
+    players.value.find(({playerId}) => playerId === data.playerId)?.showBalloon(data.keys[0].name)
   });
 }
 init()
@@ -137,6 +140,9 @@ const playersInfo = computed(() => {
 
   return result;
 })
+
+const players = ref<InstanceType<typeof PlayerAvatar>[]>([]);
+
 </script>
 
 <style scoped lang="sass">
