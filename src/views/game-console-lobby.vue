@@ -7,6 +7,7 @@
           <room-id-chip color="#67785d" />
 
           <btn-base
+            :ref="mountElement"
             label="开始游戏"
             class="w-96"
             label-hover-color="#7b916e"
@@ -42,6 +43,7 @@
           </btn-base>
 
           <btn-base
+            :ref="mountElement"
             label="结束派对"
             class="w-96"
             label-hover-color="#7b916e"
@@ -114,11 +116,19 @@ import BtnBase from '../components/btn-base.vue';
 import { useLoading } from '../composables/use-loading';
 import { useClientGameConsole } from '../composables/use-client-game-console';
 import { useGameConsoleStore } from '../stores/game-console.store';
+import { useGamepadNavigator } from '../composables/use-gamepad-navigator';
 import {computed, ref} from 'vue'
+import PolygonBase from '../components/polygon-base.vue';
 
 const loading = useLoading();
 const gameConsole = useClientGameConsole();
 const gameConsoleStore = useGameConsoleStore();
+const gamepadNavigator = useGamepadNavigator();
+
+function mountElement(el: any) {
+  const controlElement = el as InstanceType<typeof BtnBase>;
+  gamepadNavigator.mountElement(controlElement)
+}
 
 function init(){
   gameConsole.setStatus('lobby')
@@ -127,7 +137,33 @@ function init(){
   gameConsole.onGamepadData(data => {
     console.log(`[ onGamepadData ] data :`, data);
 
-    players.value.find(({playerId}) => playerId === data.playerId)?.showBalloon(data.keys[0].name)
+    const lastDatum = data.keys.at(-1);
+
+    const action = lastDatum?.name;
+    const state = lastDatum?.value;
+
+    if (!action) return;
+
+    // 忽略按下訊號
+    if (state) return;
+
+    players.value.find(({playerId}) => playerId === data.playerId)?.showBalloon(action)
+    console.log('***', action)
+    if (action === 'up') {
+      gamepadNavigator.prev();
+      return;
+    }
+
+    if (action === 'down') {
+      gamepadNavigator.next();
+      return;
+    }
+
+    if (action === 'confirm') {
+      gamepadNavigator.click();
+      return;
+    }
+
   });
 }
 init()

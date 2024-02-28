@@ -38,8 +38,8 @@ const clipPath = computed(() => clipPathMap?.[props.shape] ?? clipPathMap[ShapeT
 
 const fillMap = {
   [FillType.SOLID]: ``,
-  [FillType.FENCE]: `url(images/line.svg)`,
-  [FillType.SPOT]: `url(images/round.svg)`,
+  [FillType.FENCE]: `url(/images/line.svg)`,
+  [FillType.SPOT]: `url(/images/round.svg)`,
 }
 const fill = computed(() => fillMap?.[props.fill] ?? fillMap[FillType.SPOT]);
 

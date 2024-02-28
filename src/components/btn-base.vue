@@ -46,11 +46,15 @@
 </template>
 
 <script setup lang="ts">
-import { reactive,computed, ref, defineEmits } from 'vue';
+import { reactive,computed, ref } from 'vue';
 import {State} from './btn.type'
 import {nanoid} from 'nanoid'
+import { ControlElement } from '../composables/use-gamepad-navigator';
+import { promiseTimeout } from '@vueuse/core';
 
-const emit = defineEmits(['click'])
+const emit = defineEmits<{
+  (e: 'click'): void;
+}>();
 
 interface Props {
   label?: string;
@@ -107,8 +111,12 @@ const strokeStyle = computed(() => {
   }
 });
 
-function handleClick() {
+function handleClick(showEffect = false) {
   emit('click');
+
+  if(showEffect){
+    processClick()
+  }
 }
 function handleMouseenter() {
   state.hover = true;
@@ -122,6 +130,24 @@ function handleMousedown() {
 function handleMouseup() {
   state.active = false;
 }
+
+async function processClick(){
+  state.hover = true
+  state.active = true
+
+  await promiseTimeout(200);
+
+  state.active = false
+}
+
+defineExpose<ControlElement>({
+  click: (effect = true) => {
+    handleClick(effect)
+  },
+  isHover: () => state.hover,
+  hover: handleMouseenter,
+  leave: handleMouseleave,
+});
 </script>
 
 <style scoped lang="sass">
