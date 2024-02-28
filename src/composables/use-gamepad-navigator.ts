@@ -28,10 +28,7 @@ export function useGamepadNavigator<T extends ControlElement>() {
 
   /** 上一个元件 */
   function prev(){
-    console.log('prev', currentIndex.value)
-    console.log(controlElements.value)
     if(currentIndex.value < 0){
-      console.log(1)
       hoverElement(0)
     }
 
@@ -39,7 +36,7 @@ export function useGamepadNavigator<T extends ControlElement>() {
     if(targetIndex < 0){
       targetIndex += controlElements.value.length
     }
-    console.log(2, targetIndex)
+
     return hoverElement(targetIndex)
   }
 

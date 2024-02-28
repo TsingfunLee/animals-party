@@ -119,6 +119,7 @@ import { useGameConsoleStore } from '../stores/game-console.store';
 import { useGamepadNavigator } from '../composables/use-gamepad-navigator';
 import {computed, ref} from 'vue'
 import PolygonBase from '../components/polygon-base.vue';
+import {SingleData} from '../types/player.type'
 
 const loading = useLoading();
 const gameConsole = useClientGameConsole();
@@ -134,6 +135,8 @@ function init(){
   gameConsole.setStatus('lobby')
   loading.hide();
 
+  let lastData: SingleData | undefined
+
   gameConsole.onGamepadData(data => {
     console.log(`[ onGamepadData ] data :`, data);
 
@@ -142,13 +145,18 @@ function init(){
     const action = lastDatum?.name;
     const state = lastDatum?.value;
 
-    if (!action) return;
+    // onGamepadData会触发2次, 忽略相同的1次
+    if(lastData?.name === action && lastData?.value === state) return
 
-    // 忽略按下訊號
+    lastData = lastDatum
+    
+    if (!action) return;  
+
+    // 忽略按下
     if (state) return;
 
     players.value.find(({playerId}) => playerId === data.playerId)?.showBalloon(action)
-    console.log('***', action)
+
     if (action === 'up') {
       gamepadNavigator.prev();
       return;
