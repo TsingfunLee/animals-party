@@ -12,6 +12,7 @@
             class="w-96"
             label-hover-color="#7b916e"
             stroke-hover-color="white"
+            @click="startParty"
           >
             <template #default="{ state }">
               <transition name="opacity">
@@ -97,7 +98,7 @@
       <!-- 選擇遊戲 -->
       <div class="w-2/3 flex flex-nowrap justify-between items-center flex-1 px-16">
         <btn-base label="◀" />
-        <game-tab-panel />
+        <game-tab-panel ref="gameTabPanel" />
         <btn-base label="▶" />
       </div>
     </div>
@@ -125,6 +126,8 @@ const loading = useLoading();
 const gameConsole = useClientGameConsole();
 const gameConsoleStore = useGameConsoleStore();
 const gamepadNavigator = useGamepadNavigator();
+
+const gameTabPanel = ref<InstanceType<typeof GameTabPanel>>()
 
 function mountElement(el: any) {
   const controlElement = el as InstanceType<typeof BtnBase>;
@@ -187,6 +190,10 @@ const playersInfo = computed(() => {
 
 const players = ref<InstanceType<typeof PlayerAvatar>[]>([]);
 
+async function startParty() {
+  await loading.show()
+  gameTabPanel.value?.start()
+}
 </script>
 
 <style scoped lang="sass">
