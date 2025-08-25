@@ -43,7 +43,7 @@ function createCamera(scene: Scene){
 }
 
 function createSea(scene: Scene){
-  const sea = MeshBuilder.createGround('sea', {
+  const sea = MeshBuilder.CreateGround('sea', {
     height: 1000,
     width: 1000
   })
