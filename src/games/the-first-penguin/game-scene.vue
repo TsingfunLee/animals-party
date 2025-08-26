@@ -9,8 +9,14 @@
 import { ref , onMounted, onBeforeUnmount} from 'vue';
 import { ArcRotateCamera, Engine, Scene, Vector3, 
   BackgroundMaterial, Color3, MeshBuilder, 
-  StandardMaterial
+  StandardMaterial,
+  CannonJSPlugin,
+  PhysicsImpostor, 
 } from '@babylonjs/core'
+import '@babylonjs/loaders'
+import * as CANNON from 'cannon-es'
+
+import { Penguin } from './penguin'
 
 import { useLoading } from '../../composables/use-loading';
 
@@ -28,6 +34,10 @@ function createEngine(canvas: HTMLCanvasElement){
 function createScene(engine:Engine){
   const scene = new Scene(engine);
   scene.createDefaultLight();
+
+  const physicsPlugin = new CannonJSPlugin(true, 8, CANNON);
+  scene.enablePhysics(new Vector3(0, -9.81, 0), physicsPlugin);
+
   return scene;
 }
 
@@ -64,11 +74,23 @@ function createIce(scene: Scene){
     height: 4,
   });
   ice.material = new StandardMaterial('iceMaterial', scene);
+  ice.physicsImpostor = new PhysicsImpostor(ice, PhysicsImpostor.BoxImpostor, 
+    { mass: 0, friction: 0, restitution: 0}, scene
+  )
 
   return ice;
 }
 
-function init() {
+async function createPenguin(id:string, index: number){
+  const penguin = await new Penguin(`penguin-${index}`, scene, {
+    position: new Vector3(0, 10, 0),
+    ownerId: id,
+  }).init();
+
+  return penguin;
+}
+
+async function init() {
   if(!canvas.value){
     console.error('无法获取canvas');
     return;
@@ -80,6 +102,7 @@ function init() {
 
   createSea(scene);
   createIce(scene);
+  await createPenguin('', 1);
 
   engine.runRenderLoop(()=>{
     scene.render();
