@@ -1,6 +1,9 @@
 import { Scene, Color3, Vector3, SceneLoader, 
   AbstractMesh,AnimationGroup, MeshBuilder, PhysicsImpostor,
-  StandardMaterial, Animation } from '@babylonjs/core';
+  StandardMaterial, Animation, 
+  InterpolateValueAction,
+  ActionManager,
+  Action} from '@babylonjs/core';
 import { defaultsDeep } from 'lodash-es';
 
 export interface PenguinParams {
@@ -35,6 +38,10 @@ export class Penguin {
     walk: undefined,
     attack: undefined,
   }
+
+  private readonly maxVelocity = new Vector3(6, 6, 6);
+
+  private rotateAction?: InterpolateValueAction;
 
   constructor(name: string, scene: Scene, params?: PenguinParams) {
     this.name = name;
@@ -112,6 +119,21 @@ export class Penguin {
     return badge;
   }
 
+  private initActionManager(){
+    if(!this.mesh) return;
+
+    this.mesh.actionManager = new ActionManager(this.scene);
+
+    this.rotateAction = new InterpolateValueAction(
+      ActionManager.NothingTrigger,
+      this.mesh,
+      'rotation',
+      new Vector3(0, 3, 0),
+      300
+    );
+    this.mesh.actionManager.registerAction(this.rotateAction);
+  }
+
   async init(){
     const result = await SceneLoader.ImportMeshAsync('', '/games/the-first-penguin/', 'penguin.glb', this.scene);
     
@@ -128,6 +150,72 @@ export class Penguin {
     badge.setParent(hitBox);
     badge.position = new Vector3(0, 3, 0);
 
+    this.initActionManager()
+
+    this.scene.registerBeforeRender(() => {
+      this.limitMaxVelocity();
+    })
+
     return this;
+  }
+
+  walk(force: Vector3){
+    if(!this.mesh){
+      throw new Error('未创建mesh');
+    }
+
+    this.mesh.physicsImpostor?.applyImpulse(force, Vector3.Zero());
+  
+    // 转向
+    const targetAngle = this.getForceAngle(force);
+    const currentAngle = this.mesh.rotation.y;
+
+    /**如果角度超过180度 */
+    if(Math.abs(targetAngle - currentAngle) > Math.PI){
+      const supplementaryAngle = Math.PI * 2 - Math.abs(currentAngle)
+      if(currentAngle < 0){
+        this.mesh.rotation = new Vector3(0, supplementaryAngle, 0);
+      }else{
+        this.mesh.rotation = new Vector3(0, -supplementaryAngle, 0);
+      }
+    }
+
+    if(this.rotateAction){
+      this.rotateAction.value = new Vector3(0, targetAngle, 0);
+      this.rotateAction.execute();
+    }
+  }
+
+  private limitMaxVelocity(){
+    if(!this.mesh || !this.mesh.physicsImpostor) return;
+
+    const velocity = this.mesh.physicsImpostor.getLinearVelocity();
+    if(!velocity) return;
+
+    const currentSpeed = velocity.length();
+    if(currentSpeed > this.maxVelocity.length()){
+      const newVelocity = velocity.normalize().multiply(this.maxVelocity);
+      this.mesh.physicsImpostor?.setLinearVelocity(newVelocity);
+    }
+  }
+
+  /** 获取力与企鹅的夹角 */
+  private getForceAngle(force: Vector3){
+    if(!this.mesh){
+      throw new Error('未创建Mesh');
+    }
+
+    const forceVector = force.normalize();
+    const characterVector = new Vector3(0, 0, 1);
+    const deltaAngle = Math.acos(Vector3.Dot(forceVector, characterVector));
+  
+    /**反余弦求得角度范围为0-180度， 需自行判断负角
+     * 力向量x轴为负时，表示夹角为负
+     */
+    if(forceVector.x < 0){
+      return deltaAngle * -1;
+    }
+
+    return deltaAngle;
   }
 }

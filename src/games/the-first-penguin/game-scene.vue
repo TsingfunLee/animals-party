@@ -11,7 +11,8 @@ import { ArcRotateCamera, Engine, Scene, Vector3,
   BackgroundMaterial, Color3, MeshBuilder, 
   StandardMaterial,
   CannonJSPlugin,
-  PhysicsImpostor, 
+  PhysicsImpostor,
+  KeyboardEventTypes, 
 } from '@babylonjs/core'
 import '@babylonjs/loaders'
 import * as CANNON from 'cannon-es'
@@ -102,7 +103,30 @@ async function init() {
 
   createSea(scene);
   createIce(scene);
-  await createPenguin('', 1);
+  const penguin = await createPenguin('', 1);
+
+  scene.onKeyboardObservable.add(keyboardInfo => {
+    if(keyboardInfo.type !== KeyboardEventTypes.KEYDOWN) return;
+
+    switch(keyboardInfo.event.key){
+      case 'ArrowLeft': {
+        penguin.walk(new Vector3(-1, 0, 0));
+        break;
+      }
+      case 'ArrowUp': {
+        penguin.walk(new Vector3(0, 0, 1));
+        break;
+      }
+      case 'ArrowRight': {
+        penguin.walk(new Vector3(1, 0, 0))
+        break;
+      }
+      case 'ArrowDown': {
+        penguin.walk(new Vector3(0, 0, -1));
+        break;
+      }
+    }
+  });
 
   engine.runRenderLoop(()=>{
     scene.render();
