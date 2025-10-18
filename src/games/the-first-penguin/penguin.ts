@@ -4,13 +4,13 @@ import { Scene, Color3, Vector3, SceneLoader,
   InterpolateValueAction,
   ActionManager,
   Action} from '@babylonjs/core';
-import { defaultsDeep } from 'lodash-es';
+import { defaultsDeep, debounce , throttle} from 'lodash-es';
 
 export interface PenguinParams {
   /** 起始位置 */
   position?: Vector3;
   ownerId: string;
-  color: Color3;
+  color?: Color3;
 }
 
 type State = 'idle' | 'walk' | 'attack';
@@ -42,6 +42,8 @@ export class Penguin {
   private readonly maxVelocity = new Vector3(6, 6, 6);
 
   private rotateAction?: InterpolateValueAction;
+
+  private readonly assaultedForce = new Vector3(20, 20, 20);
 
   constructor(name: string, scene: Scene, params?: PenguinParams) {
     this.name = name;
@@ -152,6 +154,8 @@ export class Penguin {
 
     this.initActionManager()
 
+    this.setState('idle');
+
     this.scene.registerBeforeRender(() => {
       this.limitMaxVelocity();
     })
@@ -163,6 +167,8 @@ export class Penguin {
     if(!this.mesh){
       throw new Error('未创建mesh');
     }
+
+    if(this.state === 'attack') return;
 
     this.mesh.physicsImpostor?.applyImpulse(force, Vector3.Zero());
   
@@ -183,8 +189,46 @@ export class Penguin {
     if(this.rotateAction){
       this.rotateAction.value = new Vector3(0, targetAngle, 0);
       this.rotateAction.execute();
+
+      this.animation.walk?.start(true);
+      this.setState('walk');
+      this.setIdleStateDebounce();
     }
   }
+
+  attack = throttle(() => {
+    this.setState('attack');
+    this.leaveAttackStateDebounce();
+    this.setIdleStateDebounce.cancel()
+  }, 2000, {
+    leading: true,
+    trailing: false,
+  })
+
+  /**
+   * 被攻击
+   * @param direction 移动方向
+   */
+  assaulted = throttle((direction: Vector3) => {
+    if (!this.mesh) {
+      throw new Error('未建立Mesh')
+    }
+
+    // 计算力量
+    const force = direction.normalize().multiply(this.assaultedForce);
+    this.mesh.physicsImpostor?.applyImpulse(force, Vector3.Zero());
+
+  }, 500, {
+    leading: true,
+    trailing: false
+  })
+
+  private leaveAttackStateDebounce = debounce(() => {
+    this.setState('idle');
+  }, 1000, {
+    leading: false,
+    trailing: true,
+  })
 
   private limitMaxVelocity(){
     if(!this.mesh || !this.mesh.physicsImpostor) return;
@@ -218,4 +262,54 @@ export class Penguin {
 
     return deltaAngle;
   }
+
+  private setState(value: State){
+    this.processStateAnimation(value);
+    this.state = value;
+  }
+
+  private processStateAnimation(newState: State){
+    if(newState === this.state) return;
+
+    const playingAni = this.getAnimationByState(this.state);
+    const targetAni = this.getAnimationByState(newState);
+
+    this.state = newState;
+    if(!targetAni || !playingAni) return;
+
+    const loop = this.state !== 'attack';
+
+    const offset = this.state === 'attack' ? 0.3 : undefined;
+
+    this.scene.onBeforeRenderObservable.runCoroutineAsync(this.animationBlending(playingAni, targetAni, loop, offset));
+  }
+
+  private *animationBlending(fromAni: AnimationGroup, 
+    toAni: AnimationGroup, loop = true, offset = 0.1){
+      let  currentWeight = 1;
+      let targetWeight = 0;
+
+      toAni.play(loop);
+
+      while(targetWeight < 1){
+        targetWeight += offset;
+        currentWeight -= offset;
+
+        toAni.setWeightForAllAnimatables(targetWeight);
+
+        fromAni.setWeightForAllAnimatables(currentWeight);
+
+        yield;
+      }
+
+      fromAni.stop();
+  }
+
+  private getAnimationByState(value: State){
+    return this.animation[value];
+  }
+
+  private setIdleStateDebounce = debounce(async () => {
+    this.setState('idle')
+  }, 500)
 }

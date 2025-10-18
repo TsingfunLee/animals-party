@@ -26,6 +26,7 @@ const loading = useLoading();
 const canvas = ref<HTMLCanvasElement>();
 let engine: Engine;
 let scene: Scene;
+const penguins: Penguin[] = [];
 
 function createEngine(canvas: HTMLCanvasElement){
   const engine = new Engine(canvas, true);
@@ -84,11 +85,45 @@ function createIce(scene: Scene){
 
 async function createPenguin(id:string, index: number){
   const penguin = await new Penguin(`penguin-${index}`, scene, {
-    position: new Vector3(0, 10, 0),
+    position: new Vector3(5 * index, 10, 0),
     ownerId: id,
   }).init();
 
   return penguin;
+}
+
+// 企鹅碰撞检测
+function detectCollideEvents(penguins: Penguin[]){
+  const length = penguins.length;
+  for(let i = 0; i < length; i++){
+    for(let j = i; j < length; j++){
+      if(i === j) continue;
+
+      const aMesh = penguins[i].mesh;
+      const bMesh = penguins[j].mesh;
+      if(!aMesh || !bMesh) continue;
+
+      if(aMesh.intersectsMesh(bMesh)){
+        handleCollideEvent(penguins[i], penguins[j]);
+      }
+    }
+  }
+}
+
+function handleCollideEvent(aPenguin: Penguin, bPenguin:Penguin){
+  if(!aPenguin.mesh || !bPenguin.mesh) return;
+
+  const aState = aPenguin.state;
+  const bState = bPenguin.state;
+  // 没有企鹅在attack状态，不做动作
+  if(![aState, bState].includes('attack')) return;
+
+  const direction = bPenguin.mesh.position.subtract(aPenguin.mesh.position);
+  if(aState === 'attack'){
+    bPenguin.assaulted(direction);
+  }else{
+    aPenguin.assaulted(direction.multiply(new Vector3(-1, -1, -1)));
+  }
 }
 
 async function init() {
@@ -103,10 +138,19 @@ async function init() {
 
   createSea(scene);
   createIce(scene);
-  const penguin = await createPenguin('', 1);
+  const result = await Promise.allSettled([
+    createPenguin('', 0),
+    createPenguin('', 1), 
+  ])
+  result.forEach(data => {
+    if(data.status !== 'fulfilled') return;
+    penguins.push(data.value)
+  })
 
   scene.onKeyboardObservable.add(keyboardInfo => {
     if(keyboardInfo.type !== KeyboardEventTypes.KEYDOWN) return;
+
+    const penguin = penguins[0]
 
     switch(keyboardInfo.event.key){
       case 'ArrowLeft': {
@@ -123,6 +167,10 @@ async function init() {
       }
       case 'ArrowDown': {
         penguin.walk(new Vector3(0, 0, -1));
+        break;
+      }
+      case ' ': {
+        penguin.attack();
         break;
       }
     }
