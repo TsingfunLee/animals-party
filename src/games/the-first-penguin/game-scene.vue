@@ -176,6 +176,10 @@ async function init() {
     }
   });
 
+  scene.registerAfterRender(() => {
+    detectCollideEvents(penguins)
+  })
+
   engine.runRenderLoop(()=>{
     scene.render();
   })

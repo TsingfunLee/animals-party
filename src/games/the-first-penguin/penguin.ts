@@ -70,7 +70,7 @@ export class Penguin {
       width: 2, depth: 2, height: 4
     });
     hitBox.position = this.params.position
-    hitBox.visibility = 0.5
+    hitBox.visibility = 0
 
     /** 使用物理效果 */
     const hitBoxImpostor = new PhysicsImpostor(hitBox, PhysicsImpostor.BoxImpostor,
