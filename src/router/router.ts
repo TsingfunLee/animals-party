@@ -15,7 +15,9 @@ export enum RouteName {
 
   PLAYER_GAMEPAD_LOBBY = 'player-gamepad-lobby',
 
-  GAME_CONSOLE_THE_FIRST_PENGUIN = 'game-console-the-first-penguin'
+  GAME_CONSOLE_THE_FIRST_PENGUIN = 'game-console-the-first-penguin',
+
+  PLAYER_GAMEPAD_THE_FIRST_PENGUIN = 'player-gamepad-the-first-penguin',
 }
 
 const routes: Array<RouteRecordRaw> = [
@@ -59,6 +61,11 @@ const routes: Array<RouteRecordRaw> = [
         path:`lobby`,
         name: RouteName.PLAYER_GAMEPAD_LOBBY,
         component: ()=>import('../views/player-gamepad-lobby.vue')
+      },
+      {
+        path: `the-first-penguin`,
+        name: RouteName.PLAYER_GAMEPAD_THE_FIRST_PENGUIN,
+        component: () => import('../views/player-gamepad-the-first-penguin.vue')
       }
     ]
   },

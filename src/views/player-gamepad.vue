@@ -42,5 +42,5 @@ function init() {
 
   player.requestGameConsoleState();
 }
-init();
+// init();
 </script>
