@@ -111,8 +111,24 @@ function handleTouch(details: PenDetails) {
     thumb.offset.x = 0;
     thumb.offset.y = 0;
     thumb.active = false;
+
+    emit('trigger', {
+      x: 0, y: 0
+    })
   }
+
+  const vector = new Vector2(thumb.offset.x, thumb.offset.y).normalize()
+  triggerThrottle(vector.x, vector.y)
 }
+
+const triggerThrottle = throttle((x:number, y:number)=>{
+  emit('trigger', {
+    x, y
+  })
+}, 50, {
+  leading: true,
+  trailing: false
+})
 </script>
 
 <style scoped lang="sass">

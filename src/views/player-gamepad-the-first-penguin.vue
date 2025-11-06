@@ -3,7 +3,10 @@
     class="w-full h-full flex text-white select-none"
     @touchmove="(e)=>e.preventDefault()"
   >
-    <gamepad-analog-stick class="absolute bottom-5 left-8" />
+    <gamepad-analog-stick
+      class="absolute bottom-5 left-8"
+      @trigger="data => handleAnalogStickTrigger(data)"
+    />
     <gamepad-btn
       class="absolute bottom-10 right-20"
       size="6rem"
@@ -77,6 +80,10 @@ function handleBtnTrigger(keyName: `${KeyName}`, status: boolean) {
     name: keyName,
     value: status,
   }]);
+}
+
+function handleAnalogStickTrigger(data: { x: number, y:number}){
+  console.log(`[ handleAnalogStickTrigger ] : `, data);
 }
 </script>
 
