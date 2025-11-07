@@ -24,7 +24,7 @@ function init() {
   }
 
   player.onGameConsoleStateUpdate((state) => {
-    const { status } = state;
+    const { status, gameName } = state;
 
     console.log(`[ onGameConsoleStateUpdate ] state : `, state);
     gameConsoleStore.updateState(state);
@@ -38,9 +38,18 @@ function init() {
         name: RouteName.PLAYER_GAMEPAD_LOBBY
       });
     }
+
+    if(gameConsoleStore.status !== 'playing') return
+
+    console.log(`[onStateUpdate] gameName :`, gameName)
+    if(gameName === 'the-first-penguin'){
+      router.push({
+        name: RouteName.PLAYER_GAMEPAD_THE_FIRST_PENGUIN
+      });
+    }
   });
 
   player.requestGameConsoleState();
 }
-// init();
+init();
 </script>

@@ -11,7 +11,9 @@ export enum GameConsoleStatus {
 }
 
 /** 遊戲名稱列舉 */
-export enum GameName { }
+export enum GameName { 
+
+}
 
 /** 玩家 */
 export interface Player {

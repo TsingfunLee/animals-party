@@ -10,9 +10,12 @@
     <gamepad-btn
       class="absolute bottom-10 right-20"
       size="6rem"
-      icon="done"
-      @trigger="(status) => handleBtnTrigger('confirm', status)"
-    />
+      @trigger="(status) => handleBtnTrigger('a', status)"
+    >
+      <div class="text-9xl">
+        A
+      </div>
+    </gamepad-btn>
 
     <div
       class="code-name"
@@ -84,6 +87,14 @@ function handleBtnTrigger(keyName: `${KeyName}`, status: boolean) {
 
 function handleAnalogStickTrigger(data: { x: number, y:number}){
   console.log(`[ handleAnalogStickTrigger ] : `, data);
+
+  player.emitGamepadData([{
+    name: 'x-axis',
+    value: data.x,
+  },{
+    name: 'y-axis',
+    value: data.y,
+  }]);
 }
 </script>
 

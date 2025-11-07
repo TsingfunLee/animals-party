@@ -65,7 +65,7 @@ function next() {
 }
 
 const start = debounce(() => {
-  gameConsole.setGameName(selectedGame.value.name)
+  gameConsole.setGameName(selectedGame.value.gameName)
   gameConsole.setStatus('playing')
 
   router.push({

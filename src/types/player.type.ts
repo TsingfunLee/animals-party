@@ -6,6 +6,10 @@ export enum KeyName {
   DOWN = 'down',
 
   CONFIRM = 'confirm',
+
+  A = 'a',
+  X_AXIS = 'x-axis',
+  Y_AXIS = 'y-axis',
 }
 
 /** 數位訊號

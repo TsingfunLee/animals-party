@@ -19,13 +19,13 @@ const gameConsole = useClientGameConsole();
 
 function init() {
   // 房間 ID 不存在，跳回首頁
-  // if (!gameConsoleStore.roomId) {
-  //   router.push({
-  //     name: RouteName.HOME
-  //   });
-  //   loading.hide();
-  //   return;
-  // }
+  if (!gameConsoleStore.roomId) {
+    router.push({
+      name: RouteName.HOME
+    });
+    loading.hide();
+    return;
+  }
 
   gameConsole.onPlayerUpdate((players: Player[]) => {
     gameConsoleStore.updateState({
@@ -34,9 +34,9 @@ function init() {
   })
 
   // 跳轉至遊戲大廳
-  // router.push({
-  //   name: RouteName.GAME_CONSOLE_LOBBY
-  // });
+  router.push({
+    name: RouteName.GAME_CONSOLE_LOBBY
+  });
 }
 init();
 </script>
