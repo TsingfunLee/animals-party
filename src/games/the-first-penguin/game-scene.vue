@@ -16,12 +16,16 @@ import { ArcRotateCamera, Engine, Scene, Vector3,
 } from '@babylonjs/core'
 import '@babylonjs/loaders'
 import * as CANNON from 'cannon-es'
+import { curry } from 'lodash-es';
+import { useClientGameConsole } from '../../composables/use-client-game-console';
 
 import { Penguin } from './penguin'
 
 import { useLoading } from '../../composables/use-loading';
+import { SingleData, KeyName, GamepadData } from '../../types/player.type';
 
 const loading = useLoading();
+const gameConsole = useClientGameConsole();
 
 const canvas = ref<HTMLCanvasElement>();
 let engine: Engine;
@@ -126,6 +130,46 @@ function handleCollideEvent(aPenguin: Penguin, bPenguin:Penguin){
   }
 }
 
+/** 根据key获取数据 */
+const findSingleData = curry((keys: SingleData[], name: `${KeyName}`) => keys.find(key => key.name === name))
+
+/**控制指定企鹅 */
+function ctrlPenguin(penguin: Penguin, data: GamepadData){
+  const { keys } = data;
+  const findData = findSingleData(keys)
+
+  // 攻击
+  const attackData = findData('a')
+  if(attackData){
+    penguin.attack();
+    return
+  }
+
+  // 方向移动
+  const xData = findData('x-axis')
+  const yData = findData('y-axis')
+
+  const x = xData?.value ?? 0
+  const y = yData?.value ?? 0
+
+  if(x === 0 && y === 0) return;
+  if(typeof x === 'number' && typeof y === 'number'){
+    penguin.walk(new Vector3(x, 0, -y));
+  }
+}
+
+function initGamepadEvent(){
+  gameConsole.onGamepadData(data => {
+    console.log(`[gameConsole.onGamepadData] data: `, data)
+
+    const penguin = penguins[0];
+    if(!penguin) return;
+    ctrlPenguin(penguin, data);
+  })
+
+
+}
+
 async function init() {
   if(!canvas.value){
     console.error('无法获取canvas');
@@ -180,9 +224,11 @@ async function init() {
     detectCollideEvents(penguins)
   })
 
-  engine.runRenderLoop(()=>{
+  engine.runRenderLoop(() => {
     scene.render();
   })
+
+  initGamepadEvent()
 
   loading.hide();
 }
