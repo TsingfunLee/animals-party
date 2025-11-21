@@ -68,6 +68,18 @@ export function useClientGameConsole(){
     });
   }
 
+  function getPlayerCodeName(id: string){
+    const index = gameConsoleStore.players.findIndex(({clientId})=>{
+      clientId === id
+    })
+
+    if(index < 0){
+      return 'unknown'
+    }
+
+    return `${index + 1}P`
+  }
+
   const gamepadDataHook = createEventHook<GamepadData>();
   client?.value?.on('player:gamepad-data', gamepadDataHook.trigger);
   onBeforeUnmount(() => {
@@ -89,6 +101,7 @@ export function useClientGameConsole(){
     setGameName,
     // 摇杆控制信号事件
     onGamepadData: gamepadDataHook.on,
-    onPlayerUpdate: playerUpdateHook.on
+    onPlayerUpdate: playerUpdateHook.on,
+    getPlayerCodeName,
   }
 }

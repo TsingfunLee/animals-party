@@ -18,19 +18,30 @@ import '@babylonjs/loaders'
 import * as CANNON from 'cannon-es'
 import { curry } from 'lodash-es';
 import { useClientGameConsole } from '../../composables/use-client-game-console';
-
+import { useGameConsoleStore } from '../../stores/game-console.store';
 import { Penguin } from './penguin'
+
+import { getPlayerColor } from '../../common/utils';
+import { colors } from 'quasar'
 
 import { useLoading } from '../../composables/use-loading';
 import { SingleData, KeyName, GamepadData } from '../../types/player.type';
 
 const loading = useLoading();
 const gameConsole = useClientGameConsole();
+const gameConsoleStore = useGameConsoleStore()
+const { getPaletteColor, textToRgb } = colors
 
 const canvas = ref<HTMLCanvasElement>();
 let engine: Engine;
 let scene: Scene;
 const penguins: Penguin[] = [];
+const penguinInitPositions = [
+  new Vector3(-5, 0, 5),
+  new Vector3(5, 0, 5),
+  new Vector3(-5, 0, -5),
+  new Vector3(5, 0, -5)
+]
 
 function createEngine(canvas: HTMLCanvasElement){
   const engine = new Engine(canvas, true);
@@ -88,9 +99,19 @@ function createIce(scene: Scene){
 }
 
 async function createPenguin(id:string, index: number){
+  const codeName = gameConsole.getPlayerCodeName(id)
+  const color = getPlayerColor({codeName})
+  const hex = getPaletteColor(color)
+  const rgb = textToRgb(hex)
+
+  const position = penguinInitPositions[index % penguinInitPositions.length]
+  // 超过4人时调整高度
+  position.y = Math.round(index / penguinInitPositions.length) * 10 + 5
+
   const penguin = await new Penguin(`penguin-${index}`, scene, {
-    position: new Vector3(5 * index, 10, 0),
+    position,
     ownerId: id,
+    color: new Color3(rgb.r / 255, rgb.g / 255, rgb.b / 255)
   }).init();
 
   return penguin;
@@ -162,7 +183,9 @@ function initGamepadEvent(){
   gameConsole.onGamepadData(data => {
     console.log(`[gameConsole.onGamepadData] data: `, data)
 
-    const penguin = penguins[0];
+    const { playerId } = data;
+
+    const penguin = penguins.find(penguin => penguin.params.ownerId === playerId)
     if(!penguin) return;
     ctrlPenguin(penguin, data);
   })
@@ -182,10 +205,7 @@ async function init() {
 
   createSea(scene);
   createIce(scene);
-  const result = await Promise.allSettled([
-    createPenguin('', 0),
-    createPenguin('', 1), 
-  ])
+  const result = await Promise.allSettled(gameConsoleStore.players.map(({clientId}, index) => createPenguin(clientId, index)))
   result.forEach(data => {
     if(data.status !== 'fulfilled') return;
     penguins.push(data.value)
