@@ -3,7 +3,9 @@ import { GameConsoleStatus, GameName, UpdateGameConsoleState, useGameConsoleStor
 import { GamepadData } from "../types/player.type";
 import { createEventHook } from "@vueuse/core";
 import { onBeforeUnmount } from "vue";
+import { useRouter } from "vue-router";
 import { Player } from './../stores/game-console.store';
+import { RouteName } from "../router/router";
 
 const gameConsoleStore = useGameConsoleStore()
 
@@ -80,6 +82,12 @@ export function useClientGameConsole(){
     return `${index + 1}P`
   }
 
+  function endParty(){
+    client?.value?.disconnect();
+    const router = useRouter();
+    router.push({name: RouteName.HOME});
+  }
+
   const gamepadDataHook = createEventHook<GamepadData>();
   client?.value?.on('player:gamepad-data', gamepadDataHook.trigger);
   onBeforeUnmount(() => {
@@ -103,5 +111,6 @@ export function useClientGameConsole(){
     onGamepadData: gamepadDataHook.on,
     onPlayerUpdate: playerUpdateHook.on,
     getPlayerCodeName,
+    endParty,
   }
 }

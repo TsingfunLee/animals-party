@@ -49,6 +49,7 @@
             class="w-96"
             label-hover-color="#7b916e"
             stroke-hover-color="white"
+            @click="endParty"
           >
             <template #default="{ state }">
               <transition name="opacity">
@@ -193,6 +194,11 @@ const players = ref<InstanceType<typeof PlayerAvatar>[]>([]);
 async function startParty() {
   await loading.show()
   gameTabPanel.value?.start()
+}
+
+function endParty() {
+  gameConsole.setStatus('home')
+  gameConsole.endParty()
 }
 </script>
 
