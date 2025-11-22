@@ -3,16 +3,36 @@
     ref="canvas"
     class="w-full h-full outline-none"
   />
+
+  <q-dialog
+    v-model="isGameOver"
+    persistent
+  >
+    <div class="card gap-14">
+      <div class="flex items-center text-3xl text-gray-600">
+        <q-icon name="emoji_events" />
+        游戏结束
+      </div>
+      <div class="text-3xl text-sky-700">
+        玩家{{ winnerCodeName }} 获胜！
+      </div>
+
+      <div class="text-xl text-gray-400">
+        按下A回到大厅
+      </div>
+    </div>
+  </q-dialog>
 </template>
 
 <script setup lang="ts">
-import { ref , onMounted, onBeforeUnmount} from 'vue';
+import { ref, onMounted, onBeforeUnmount} from 'vue';
 import { ArcRotateCamera, Engine, Scene, Vector3, 
   BackgroundMaterial, Color3, MeshBuilder, 
   StandardMaterial,
   CannonJSPlugin,
   PhysicsImpostor,
   KeyboardEventTypes, 
+  Animation,
 } from '@babylonjs/core'
 import '@babylonjs/loaders'
 import * as CANNON from 'cannon-es'
@@ -26,6 +46,7 @@ import { colors } from 'quasar'
 
 import { useLoading } from '../../composables/use-loading';
 import { SingleData, KeyName, GamepadData } from '../../types/player.type';
+import router, { RouteName } from '../../router/router';
 
 const loading = useLoading();
 const gameConsole = useClientGameConsole();
@@ -42,6 +63,9 @@ const penguinInitPositions = [
   new Vector3(-5, 0, -5),
   new Vector3(5, 0, -5)
 ]
+
+const isGameOver = ref(false)
+const winnerCodeName = ref('')
 
 function createEngine(canvas: HTMLCanvasElement){
   const engine = new Engine(canvas, true);
@@ -94,6 +118,34 @@ function createIce(scene: Scene){
   ice.physicsImpostor = new PhysicsImpostor(ice, PhysicsImpostor.BoxImpostor, 
     { mass: 0, friction: 0, restitution: 0}, scene
   )
+
+  // 建立动画
+  const frameRate = 10
+  const melting = new Animation('melting', 'scaling', 
+    frameRate / 50,
+    Animation.ANIMATIONTYPE_VECTOR3,
+  )
+
+  const keyFrames = [
+    {
+      frame: 0,
+      value: new Vector3(1, 1, 1)
+    },
+    {
+      frame: frameRate,
+      value: new Vector3(0.1, 0, 0.1)
+    }
+  ]
+
+  melting.setKeys(keyFrames)
+  ice.animations.push(melting)
+
+  scene.beginAnimation(ice, 0, frameRate)
+
+  // 物理碰撞也要随着尺寸更新
+  scene.registerBeforeRender(() => {
+    ice.physicsImpostor?.setScalingUpdated()
+  })
 
   return ice;
 }
@@ -162,6 +214,7 @@ function ctrlPenguin(penguin: Penguin, data: GamepadData){
   // 攻击
   const attackData = findData('a')
   if(attackData){
+    if(isGameOver.value) return backToLobby()
     penguin.attack();
     return
   }
@@ -176,6 +229,37 @@ function ctrlPenguin(penguin: Penguin, data: GamepadData){
   if(x === 0 && y === 0) return;
   if(typeof x === 'number' && typeof y === 'number'){
     penguin.walk(new Vector3(x, 0, -y));
+  }
+}
+
+/**
+ * 处理出界的企鹅
+ * y 轴小于-3视为出界
+ */
+function detectOutOfBounds(penguins: Penguin[]){
+  penguins.forEach(penguin => {
+    if(!penguin.mesh) return;
+
+    if(penguin.mesh.position.y < -3){
+      penguin.mesh.dispose()
+    }
+  })
+}
+
+/**
+ * 检测是否有赢家
+ */
+function detectWinner(penguins: Penguin[]){
+  const alivePenguins = penguins.filter(penguin => {
+    return penguin.mesh && !penguin.mesh.isDisposed()
+  })
+
+  if(alivePenguins.length === 1){
+    engine.stopRenderLoop()
+    const winnerId = alivePenguins[0].getPlayerId();
+
+    winnerCodeName.value = gameConsole.getPlayerCodeName(winnerId)
+    isGameOver.value = true
   }
 }
 
@@ -242,6 +326,8 @@ async function init() {
 
   scene.registerAfterRender(() => {
     detectCollideEvents(penguins)
+    detectOutOfBounds(penguins)
+    detectWinner(penguins)
   })
 
   engine.runRenderLoop(() => {
@@ -251,6 +337,15 @@ async function init() {
   initGamepadEvent()
 
   loading.hide();
+}
+
+async function backToLobby() {
+  isGameOver.value = false
+
+  await loading.show()
+  router.push({
+    name: RouteName.GAME_CONSOLE_LOBBY
+  })
 }
 
 onMounted(()=>{
@@ -267,3 +362,15 @@ function handleResize() {
   engine.resize()
 }
 </script>
+
+<style scoped lang="sass">
+.card
+  width: 30rem
+  height: 24rem
+  background: white
+  border-radius: 2rem
+  display: flex
+  flex-direction: column
+  justify-content: center
+  align-items: center
+</style>

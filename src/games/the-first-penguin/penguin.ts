@@ -312,4 +312,8 @@ export class Penguin {
   private setIdleStateDebounce = debounce(async () => {
     this.setState('idle')
   }, 500)
+
+  public getPlayerId(){
+    return this.params.ownerId
+  }
 }
