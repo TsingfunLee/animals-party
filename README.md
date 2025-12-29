@@ -1,3 +1,3 @@
-# iT 邦幫忙鐵人賽 Animals Party web
+# Animals Party web
 
-提供遊戲機與玩家搖桿介面，透過 Websocket 達成即時通訊功能。
+动物派对游戏客户端。游戏摇杆界面和websocket通讯。

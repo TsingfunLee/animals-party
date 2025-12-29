@@ -1,25 +1,28 @@
 <template>
-  <div class="flex">
-    <q-btn
-      icon="home"
-      class="w-40"
-    >
-      安安 {{ store.data }}
-    </q-btn>
-  </div>
   <router-view />
+  <loading-overlay />
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { useMainStore } from './stores/main.store';
 
-const store = useMainStore();
+import LoadingOverlay from './components/loading-overlay.vue';
 
-document.title += ` v${import.meta.env.PACKAGE_VERSION}`
+
+document.title += ` v${import.meta.env.PACKAGE_VERSION}`;
 </script>
 
 <style lang="sass">
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@100;300;400;500;700;900&display=swap')
+@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch&family=Noto+Sans+TC:wght@100;300;400;500;700;900&display=swap')
+
+html
+  font-size: 1.7vmin
+  @media screen and (orientation: portrait) and (max-width: 360px)
+    font-size: 6px
+  @media screen and (orientation: portrait) and (min-width: 1200px)
+    font-size: 30px  
+
 html, body, #app
   width: 100%
   height: 100%
@@ -29,4 +32,6 @@ html, body, #app
 #app
   display: flex
   flex-direction: column
+
+
 </style>
